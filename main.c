@@ -383,7 +383,7 @@ aircraft_finished:
 	t = time(NULL);
 	tmp = gmtime(&t);
 	printf
-	    ("\n----------------------------------------------------------[%02d/%02d/%04d %02d:%02d]\n\n",
+	    ("\n----------------------------------------------------------[%02d/%02d/%04d %02d:%02d (UTC)]\n\n",
 	     tmp->tm_mday, tmp->tm_mon + 1, tmp->tm_year + 1900,
 	     tmp->tm_hour, tmp->tm_min);
 
