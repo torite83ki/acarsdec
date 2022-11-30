@@ -283,7 +283,7 @@ void print_mesg(msg_t * msg)
 
 	long i=0;
 
-	printf("RX_IDX: %ld\n", rx_idx);
+	printf("RX_IDX: %ld\x07\n", rx_idx);
 	printf("ACARS mode: %c, ", msg->mode);
 	printf("message label: %s\n", msg->label);
 /*
