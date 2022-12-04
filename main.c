@@ -392,12 +392,12 @@ aircraft_finished:
 	t = time(NULL);
 	tmp = gmtime(&t);
 	printf
-	    ("\n-------------------------------[%04d/%02d/%02d %02d:%02d:%02d (%s)]",
+	    ("\n-------------------------------[%04d/%02d/%02d %02d:%02d:%02d (%s) ]",
 	     tmp->tm_year + 1900, tmp->tm_mon + 1, tmp->tm_mday,
 	     tmp->tm_hour, tmp->tm_min, tmp->tm_sec, tmp->tm_zone);
 	tmp = localtime(&t);
 	printf
-	    ("\n-------------------------------[%04d/%02d/%02d %02d:%02d:%02d (%s)] \n\n",
+	    ("[%04d/%02d/%02d %02d:%02d:%02d (%s)] \n\n",
 	     tmp->tm_year + 1900, tmp->tm_mon + 1, tmp->tm_mday,
 	     tmp->tm_hour, tmp->tm_min, tmp->tm_sec, tmp->tm_zone);
 
