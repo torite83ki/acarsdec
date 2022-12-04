@@ -292,7 +292,7 @@ void print_mesg(msg_t * msg)
 
 	long i=0;
 
-	printf("RX_IDX: " BOLD YELLOW "%ld\x07\n" RESET BELL, rx_idx);
+	printf("RX_IDX: " BOLD YELLOW "%ld\n" RESET BELL, rx_idx);
 	printf("ACARS mode: " BOLD YELLOW "%c" RESET ", " , msg->mode);
 	printf("message label: " BOLD YELLOW "%s\n" RESET , msg->label);
 /*
