@@ -279,7 +279,8 @@ void load_aircraft_primary(void)
 #define RED			"\x1b[31m"
 #define YELLOW	"\x1b[33m"
 #define WHITE		"\x1b[37m"
-#define BOLD		"\x1b[7m"
+#define BOLD		"\x1b[1m"
+#define REVERSE	"\x1b[7m"
 #define BELL		"\x07"
 
 
@@ -291,9 +292,9 @@ void print_mesg(msg_t * msg)
 
 	long i=0;
 
-	printf("RX_IDX: %ld\x07\n", rx_idx);
-	printf("ACARS mode: %c, ", msg->mode);
-	printf("message label: %s\n", msg->label);
+	printf("RX_IDX: " BOLD YELLOW "%ld\x07\n" RESET BELL, rx_idx);
+	printf("ACARS mode: " BOLD YELLOW "%c" RESET ", " , msg->mode);
+	printf("message label: " BOLD YELLOW "%s\n" RESET , msg->label);
 /*
 	while(acars_labels[i][0]){
 		if(!strcmp(acars_labels[i][0],(const char*)msg->label)){
@@ -307,14 +308,14 @@ void print_mesg(msg_t * msg)
 	i=0;
 	while(acars_mls[i].ml_code){
 		if(!strcmp(acars_mls[i].ml_code, (const char*)msg->label)){
-			printf("ACARS ML description: %s\n",acars_mls[i].ml_label);
+			printf("ACARS ML description: " BOLD YELLOW "%s\n" RESET, acars_mls[i].ml_label);
 		}
 		i++;
 	}
 
 
-	printf("Aircraft reg: %s, ", msg->addr);
-	printf("flight id: %s\n", msg->fid);
+	printf("Aircraft reg: " BOLD YELLOW "%s" RESET ", ", msg->addr);
+	printf("flight id: " BOLD YELLOW "%s\n" RESET , msg->fid);
 
 	i=0;
 	while(acars_aircrafts_primary[i].reg){
@@ -374,9 +375,9 @@ void print_mesg(msg_t * msg)
 
 aircraft_finished:
 
-	printf("Block id: %d, ", (int) msg->bid);
-	printf(" msg. no: %s\n", msg->no);
-	printf("Message content:-\n%s", msg->txt);
+	printf("Block id: " BOLD YELLOW "%d" RESET ", ", (int) msg->bid);
+	printf(" msg. no: " BOLD YELLOW "%s\n" RESET , msg->no);
+	printf("Message content:-\n" REVERSE "%s" RESET , msg->txt);
 
 //	char *fobpos;
 //	fobpos = strchr(msg->txt, '/FOB');
