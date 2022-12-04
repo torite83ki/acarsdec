@@ -292,7 +292,7 @@ void print_mesg(msg_t * msg)
 
 	long i=0;
 
-	printf("RX_IDX: " BOLD YELLOW "%ld\x07\n" RESET BELL, rx_idx);
+	printf("RX_IDX: " BOLD YELLOW "%ld\n" RESET BELL, rx_idx);
 	printf("ACARS mode: " BOLD YELLOW "%c" RESET ", " , msg->mode);
 	printf("message label: " BOLD YELLOW "%s\n" RESET , msg->label);
 /*
@@ -392,12 +392,12 @@ aircraft_finished:
 	t = time(NULL);
 	tmp = gmtime(&t);
 	printf
-	    ("\n-------------------------------[%04d/%02d/%02d %02d:%02d:%02d (%s)]",
+	    ("\n-------------------------------[%04d/%02d/%02d %02d:%02d:%02d (%s) ]",
 	     tmp->tm_year + 1900, tmp->tm_mon + 1, tmp->tm_mday,
 	     tmp->tm_hour, tmp->tm_min, tmp->tm_sec, tmp->tm_zone);
 	tmp = localtime(&t);
 	printf
-	    ("\n-------------------------------[%04d/%02d/%02d %02d:%02d:%02d (%s)] \n\n",
+	    ("[%04d/%02d/%02d %02d:%02d:%02d (%s)] \n\n",
 	     tmp->tm_year + 1900, tmp->tm_mon + 1, tmp->tm_mday,
 	     tmp->tm_hour, tmp->tm_min, tmp->tm_sec, tmp->tm_zone);
 
