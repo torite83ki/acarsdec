@@ -274,6 +274,14 @@ void load_aircraft_primary(void)
 	printf("Loaded: %i primary aircrafts from dataset.....\n", i);
 }
 
+#define RESET 	"\x1b[0m"
+#define BLACK 	"\x1b[30m"
+#define RED			"\x1b[31m"
+#define YELLOW	"\x1b[33m"
+#define WHITE		"\x1b[37m"
+#define BOLD		"\x1b[7m"
+#define BELL		"\x07"
+
 
 void print_mesg(msg_t * msg)
 {
