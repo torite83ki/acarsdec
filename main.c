@@ -23,6 +23,8 @@
 #include <unistd.h>
 #include <string.h>
 #include <time.h>
+#include <signal.h>
+
 
 #include "version.h"
 #include "acarsdec.h"
@@ -35,24 +37,24 @@ long rx_idx;
 
 static void usage(void)
 {
-	fprintf(stderr, "Usage: acarsdec [-LR][-s noport] -d alsapcmdevice | -f sndfile \n");
-	fprintf(stderr, " -f sndfile :\t\tdecode from file sndfile (ie: a .wav file)\n");
-	fprintf(stderr, " -d alsapcmdevice :\tdecode from soundcard input alsapcmdevice (ie: hw:0,0)\n");
-	fprintf(stderr, " [-LR] :\t\tdiseable left or right channel decoding of stereo signal\n");
-	fprintf(stderr, " [-s noport ] :\t\tact as an APRS local server, on port : noport\n");
-	fprintf(stderr, "Input could be mono or stereo but with 48Khz sampling frequency.\nIf stereo, acarsdec will demod the 2 channels independantly (if no L ou R options specified)\n\n");
-	exit(1);
+				fprintf(stderr, "Usage: acarsdec [-LR][-s noport] -d alsapcmdevice | -f sndfile \n");
+				fprintf(stderr, " -f sndfile :\t\tdecode from file sndfile (ie: a .wav file)\n");
+				fprintf(stderr, " -d alsapcmdevice :\tdecode from soundcard input alsapcmdevice (ie: hw:0,0)\n");
+				fprintf(stderr, " [-LR] :\t\tdiseable left or right channel decoding of stereo signal\n");
+				fprintf(stderr, " [-s noport ] :\t\tact as an APRS local server, on port : noport\n");
+				fprintf(stderr, "Input could be mono or stereo but with 48Khz sampling frequency.\nIf stereo, acarsdec will demod the 2 channels independantly (if no L ou R options specified)\n\n");
+				exit(1);
 }
 
 struct acars_aircraft_primary {
-	char *reg;
-	char *vendor;
-	char *short_type;
-	char *full_type;
-	char *cn;
-	char *carrier_iata;
-	char *carrier_icao;
-	char *remarks;
+				char *reg;
+				char *vendor;
+				char *short_type;
+				char *full_type;
+				char *cn;
+				char *carrier_iata;
+				char *carrier_icao;
+				char *remarks;
 };
 
 struct acars_aircraft_primary acars_aircrafts_primary[64000];
@@ -403,52 +405,71 @@ aircraft_finished:
 
 
 }
+void sigintHandler(int signum)
+{
+				fprintf(stderr, "Recieved signal %s, exsiting...\n", strsignal(signum));
+				exit(1);
+}
+												
 
 int main(int argc, char **argv)
 {
-	int c;
-	msg_t msgl, msgr;
-	unsigned char rl, rr;
-	int nbitl, nbitr;
-	int nrbitl, nrbitr;
-	int nbch=0;
-	int el=1,er=1;
-	short port=0;
+				int c;
+				msg_t msgl, msgr;
+				unsigned char rl, rr;
+				int nbitl, nbitr;
+				int nrbitl, nrbitr;
+				int nbch=0;
+				int el=1,er=1;
+				short port=0;
 
+				while ((c = getopt(argc, argv, "d:f:RLs:")) != EOF) {
+						switch (c) {
+							case 'd':
+								nbch = initsample(optarg, 0);
+								break;
+						case 'f':
+								nbch = initsample(optarg, 1);
+								break;
+						case 'L':
+								el=0;
+								break;
+						case 'R':
+								er=0;
+								break;
+						case 's':
+								port=atoi(optarg);
+								break;
+						default:
+								usage();
+								exit(1);	
+						}	
+				}
+				if (nbch == 0) {
+								usage();
+								exit(1);
+				}
+				if(port)
+								if(init_serv(port)) {
+											exit(1);
+								}
 
-	while ((c = getopt(argc, argv, "d:f:RLs:")) != EOF) {
-		switch (c) {
-		case 'd':
-			nbch = initsample(optarg, 0);
-			break;
-		case 'f':
-			nbch = initsample(optarg, 1);
-			break;
-		case 'L':
-			el=0;
-			break;
-		case 'R':
-			er=0;
-			break;
-		case 's':
-			port=atoi(optarg);
-			break;
-		default:
-			usage();
-			exit(1);
-		}
-	}
+				struct sigaction sigact;
+				struct sigaction sigactIgnore;
+				//sigset_t blocked;
+				void sigintHandler(int);
 
-	if (nbch == 0) {
-		usage();
-		exit(1);
-	}
+				sigactIgnore.sa_handler = SIG_IGN;
+				sigactIgnore.sa_flags = 0;
+				sigemptyset(&sigactIgnore.sa_mask);
+				sigaction(SIGQUIT, &sigactIgnore, NULL);
+				sigaction(SIGTERM, &sigactIgnore, NULL);
 
-	if(port) 
-	 if(init_serv(port)) {
-		exit(1);
-	 }
-		
+				sigact.sa_handler = sigintHandler;
+				sigact.sa_flags = SA_RESTART;
+				sigemptyset(&sigact.sa_mask);
+				sigaction(SIGINT, &sigact, NULL);
+
 
 /* main loop */
 
