@@ -407,7 +407,7 @@ aircraft_finished:
 }
 void sigintHandler(int signum)
 {
-				fprintf(stderr, "Recieved signal %s, exsiting...\n", strsignal(signum));
+				fprintf(stderr, "\nRecieved signal \"%s\", exsiting... Bye\n", strsignal(signum));
 				exit(1);
 }
 												
@@ -456,8 +456,6 @@ int main(int argc, char **argv)
 
 				struct sigaction sigact;
 				struct sigaction sigactIgnore;
-				//sigset_t blocked;
-				void sigintHandler(int);
 
 				sigactIgnore.sa_handler = SIG_IGN;
 				sigactIgnore.sa_flags = 0;
