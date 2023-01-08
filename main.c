@@ -423,6 +423,9 @@ int main(int argc, char **argv)
 				int el=1,er=1;
 				short port=0;
 
+				struct sigaction sigact;
+				struct sigaction sigactIgnore;
+				
 				while ((c = getopt(argc, argv, "d:f:RLs:")) != EOF) {
 						switch (c) {
 							case 'd':
@@ -454,8 +457,6 @@ int main(int argc, char **argv)
 											exit(1);
 								}
 
-				struct sigaction sigact;
-				struct sigaction sigactIgnore;
 
 				sigactIgnore.sa_handler = SIG_IGN;
 				sigactIgnore.sa_flags = 0;
