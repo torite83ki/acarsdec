@@ -405,9 +405,141 @@ aircraft_finished:
 
 
 }
+
+static char logfilename[] = "acarsdec.log";
+static FILE *logfp;
+void init_logfile(char *filename, FILE **fp) {
+				*fp = fopen(filename, "a+");
+				if( fp == NULL)
+								exit(1);
+}
+void close_logfile(FILE *fp) {
+				fclose(fp);
+}
+
+void fprint_mesg1(FILE *fp)
+{
+				fprintf(fp, "Hello\n");
+}
+
+void fprint_mesg(msg_t * msg, FILE *fp)
+{
+	time_t t;
+	struct tm *tmp;
+	char pos[128];
+
+	long i=0;
+
+	fprintf(fp, "RX_IDX: %ld\n", rx_idx);
+	fprintf(fp, "ACARS mode: " "%c" ", ", msg->mode);
+	fprintf(fp, "message label: " "%s\n", msg->label);
+
+	i=0;
+	while(acars_mls[i].ml_code){
+		if(!strcmp(acars_mls[i].ml_code, (const char*)msg->label)){
+			fprintf(fp, "ACARS ML description: " "%s\n", acars_mls[i].ml_label);
+		}
+		i++;
+	}
+
+
+	fprintf(fp, "Aircraft reg: " "%s" ", ", msg->addr);
+	fprintf(fp, "flight id: " "%s\n", msg->fid);
+
+	i=0;
+	while(acars_aircrafts_primary[i].reg){
+		const char *regtmp = (const char *) msg->addr;
+		while (regtmp[0] == '.')
+			regtmp++;
+		if(!strcmp(acars_aircrafts_primary[i].reg, regtmp)){
+			fprintf(fp, "Aircraft vendor: %s, ",acars_aircrafts_primary[i].vendor);
+			fprintf(fp, "short type: %s, ",acars_aircrafts_primary[i].short_type);
+			fprintf(fp, "full type: %s, ",acars_aircrafts_primary[i].full_type);
+			fprintf(fp, "cn: %s\n",acars_aircrafts_primary[i].cn);
+			fprintf(fp, "Carrier IATA: %s, ",acars_aircrafts_primary[i].carrier_iata);
+			fprintf(fp, "ICAO: %s, ",acars_aircrafts_primary[i].carrier_icao);
+			fprintf(fp, "remarks: %s\n",acars_aircrafts_primary[i].remarks);
+
+			long x = 0;
+			while(acars_airliness[x].al_code){
+				if(!strcmp(acars_airliness[x].al_code, acars_aircrafts_primary[i].carrier_icao)){
+					fprintf(fp, "Airlines: %s\n",acars_airliness[x].al_label);
+					break;
+				}else if(!strcmp(acars_airliness[x].al_code, acars_aircrafts_primary[i].carrier_iata)){
+					fprintf(fp, "Airlines: %s\n",acars_airliness[x].al_label);
+					break;
+				}
+				x++;
+			}
+
+
+			goto aircraft_finished;
+		}
+		i++;
+	}
+
+	i=0;
+	while(acars_aircrafts_secondary[i].reg){
+		const char *regtmp = (const char *) msg->addr;
+		while (regtmp[0] == '.')
+			regtmp++;
+		if(!strcmp(acars_aircrafts_secondary[i].reg, regtmp)){
+			fprintf(fp, "Aircraft type: %s, ",acars_aircrafts_secondary[i].type);
+			fprintf(fp, "carrier: %s, ",acars_aircrafts_secondary[i].carrier_icao);
+			fprintf(fp, "cn: %s\n",acars_aircrafts_secondary[i].cn);
+
+			long x = 0;
+			while(acars_airliness[x].al_code){
+				if(!strcmp(acars_airliness[x].al_code, acars_aircrafts_secondary[i].carrier_icao)){
+					fprintf(fp, "Airlines: %s\n",acars_airliness[x].al_label);
+					break;
+				}
+				x++;
+			}
+
+			break;
+		}
+		i++;
+	}
+
+aircraft_finished:
+
+	fprintf(fp, "Block id: " "%d" ", ", (int) msg->bid);
+	fprintf(fp, " msg. no: " "%s\n", msg->no);
+	fprintf(fp, "Message content:-\n" "%s", msg->txt);
+
+//	char *fobpos;
+//	fobpos = strchr(msg->txt, '/FOB');
+//	if(){
+//	}
+
+	rx_idx++;
+
+    if (posconv(msg->txt, msg->label, pos)==0)
+        fprintf(fp, "\nAPRS : Addr:%s Fid:%s Lbl:%s pos:%s\n", msg->addr, msg->fid,msg->label,pos);
+ 
+	t = time(NULL);
+	tmp = gmtime(&t);
+	fprintf
+	    (fp, "\n-------------------------------[%04d/%02d/%02d %02d:%02d:%02d (%s) ]",
+	     tmp->tm_year + 1900, tmp->tm_mon + 1, tmp->tm_mday,
+	     tmp->tm_hour, tmp->tm_min, tmp->tm_sec, tmp->tm_zone);
+	tmp = localtime(&t);
+	fprintf
+	    (fp, "[%04d/%02d/%02d %02d:%02d:%02d (%s)] \n\n",
+	     tmp->tm_year + 1900, tmp->tm_mon + 1, tmp->tm_mday,
+	     tmp->tm_hour, tmp->tm_min, tmp->tm_sec, tmp->tm_zone);
+
+
+}
+
+
+
+
 void sigintHandler(int signum)
 {
 				fprintf(stderr, "\nRecieved signal \"%s\", exsiting... Bye\n", strsignal(signum));
+				close_logfile(logfp);
 				exit(1);
 }
 												
@@ -478,6 +610,7 @@ int main(int argc, char **argv)
 	load_airlines();
 	init_bits();
 	init_mesg();
+	init_logfile(logfilename, &logfp);
 
 	nbitl = nbitr = 0;
 	nrbitl = nrbitr = 8;
@@ -500,8 +633,10 @@ int main(int argc, char **argv)
 				if (nrbitl == 0) {
 					if(port)
 						send_mesg(&msgl);
-					else
-						print_mesg(&msgl);
+					else {
+									print_mesg(&msgl);
+									fprint_mesg(&msgl, logfp);
+					}
 					nrbitl = 8;
 				}
 			}
@@ -517,8 +652,10 @@ int main(int argc, char **argv)
 					if (nrbitr == 0) {
 						if(port)
 							send_mesg(&msgl);
-						else
-							print_mesg(&msgl);
+						else {
+										print_mesg(&msgl);
+										fprint_mesg(&msgl, logfp);
+						}
 						nrbitr = 8;
 					}
 				}
@@ -534,5 +671,6 @@ int main(int argc, char **argv)
 
 	endsample();
 
+	close_logfile(logfp);
 	exit(0);
 }
